@@ -48,12 +48,27 @@ class Sensor(enum.Enum):
 	CreLeftBlue2 = 33
 	CreDownBlue2 = 34
 	CreRightBlue2 = 35
+	
+	FoodUp = 36
+	FoodLeft = 37
+	FoodDown = 38
+	FoodRight = 39
 
 class Behaviour(enum.Enum):
 	MvUp = 0
 	MvLeft = 1
 	MvDown = 2
 	MvRight = 3
+	
+	EatUp = 4
+	EatLeft = 5
+	EatDown = 6
+	EatRight = 7
+	
+	KillUp = 8
+	KillLeft = 9
+	KillDown = 10
+	KillRight = 11
 
 class Brain:
 	def __init__(self):
@@ -61,7 +76,17 @@ class Brain:
 			Sensor.CreUpRed2: Behaviour.MvUp,
 			Sensor.CreLeftRed2: Behaviour.MvLeft,
 			Sensor.CreDownRed2: Behaviour.MvDown,
-			Sensor.CreRightRed2: Behaviour.MvRight
+			Sensor.CreRightRed2: Behaviour.MvRight,
+			
+			Sensor.FoodUp: Behaviour.EatUp,
+			Sensor.FoodLeft: Behaviour.EatLeft,
+			Sensor.FoodDown: Behaviour.EatDown,
+			Sensor.FoodRight: Behaviour.EatRight,
+			
+			Sensor.CreUp: Behaviour.KillUp,
+			Sensor.CreLeft: Behaviour.KillLeft,
+			Sensor.CreDown: Behaviour.KillDown,
+			Sensor.CreRight: Behaviour.KillRight,
 		}
 
 class Creature:
@@ -70,11 +95,25 @@ class Creature:
 		self.brain: Brain = brain
 		self.request: Behaviour = None
 		self.colour: (int, int, int) = colour
+		self.energy: int = 300
 	
 	def update(self):
+		if self.brain == None:
+			return
+		
 		for sensor, behaviour in self.brain.data.items():
 			if Simulation.query(self, sensor):
 				Simulation.request(self, behaviour)
+			
+			self.energy -= 1
+			
+			if self.energy == 0:
+				self.die()
+	
+	def die(self):
+		self.brain = None
+		self.request = None
+		self.colour = (0x20, 0x00, 0x00)
 
 class Simulation:
 	creatures: list[Creature] = []
@@ -104,8 +143,9 @@ class Simulation:
 				checkpos = (creature.position[0], creature.position[1] - 1)
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							return True
 				
 				return False
 			
@@ -113,8 +153,9 @@ class Simulation:
 				checkpos = (creature.position[0] - 1, creature.position[1])
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							return True
 				
 				return False
 			
@@ -122,8 +163,9 @@ class Simulation:
 				checkpos = (creature.position[0], creature.position[1] + 1)
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							return True
 				
 				return False
 			
@@ -131,8 +173,9 @@ class Simulation:
 				checkpos = (creature.position[0] + 1, creature.position[1])
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							return True
 				
 				return False
 			
@@ -176,8 +219,9 @@ class Simulation:
 				checkpos = (creature.position[0], creature.position[1] - 2)
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							return True
 				
 				return False
 			
@@ -185,8 +229,9 @@ class Simulation:
 				checkpos = (creature.position[0] - 2, creature.position[1])
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							return True
 				
 				return False
 			
@@ -194,8 +239,9 @@ class Simulation:
 				checkpos = (creature.position[0], creature.position[1] + 2)
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							return True
 				
 				return False
 			
@@ -203,8 +249,9 @@ class Simulation:
 				checkpos = (creature.position[0] + 2, creature.position[1])
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							return True
 				
 				return False
 			
@@ -212,9 +259,10 @@ class Simulation:
 				checkpos = (creature.position[0], creature.position[1] - 1)
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[0] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[0] > 100:
+								return True
 				
 				return False
 			
@@ -222,9 +270,10 @@ class Simulation:
 				checkpos = (creature.position[0] - 1, creature.position[1])
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[0] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[0] > 100:
+								return True
 				
 				return False
 			
@@ -232,9 +281,10 @@ class Simulation:
 				checkpos = (creature.position[0], creature.position[1] + 1)
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[0] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[0] > 100:
+								return True
 				
 				return False
 			
@@ -242,9 +292,10 @@ class Simulation:
 				checkpos = (creature.position[0] + 1, creature.position[1])
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[0] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[0] > 100:
+								return True
 				
 				return False
 			
@@ -252,9 +303,10 @@ class Simulation:
 				checkpos = (creature.position[0], creature.position[1] - 1)
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[1] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[1] > 100:
+								return True
 				
 				return False
 			
@@ -262,9 +314,10 @@ class Simulation:
 				checkpos = (creature.position[0] - 1, creature.position[1])
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[1] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[1] > 100:
+								return True
 				
 				return False
 			
@@ -272,9 +325,10 @@ class Simulation:
 				checkpos = (creature.position[0], creature.position[1] + 1)
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[1] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[1] > 100:
+								return True
 				
 				return False
 			
@@ -282,9 +336,10 @@ class Simulation:
 				checkpos = (creature.position[0] + 1, creature.position[1])
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[1] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[1] > 100:
+								return True
 				
 				return False
 			
@@ -292,9 +347,10 @@ class Simulation:
 				checkpos = (creature.position[0], creature.position[1] - 1)
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[2] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[2] > 100:
+								return True
 				
 				return False
 			
@@ -302,9 +358,10 @@ class Simulation:
 				checkpos = (creature.position[0] - 1, creature.position[1])
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[2] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[2] > 100:
+								return True
 				
 				return False
 			
@@ -312,9 +369,10 @@ class Simulation:
 				checkpos = (creature.position[0], creature.position[1] + 1)
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[2] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[2] > 100:
+								return True
 				
 				return False
 			
@@ -322,9 +380,10 @@ class Simulation:
 				checkpos = (creature.position[0] + 1, creature.position[1])
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[2] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[2] > 100:
+								return True
 				
 				return False
 			
@@ -332,9 +391,10 @@ class Simulation:
 				checkpos = (creature.position[0], creature.position[1] - 2)
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[0] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[0] > 100:
+								return True
 				
 				return False
 			
@@ -342,9 +402,10 @@ class Simulation:
 				checkpos = (creature.position[0] - 2, creature.position[1])
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[0] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[0] > 100:
+								return True
 				
 				return False
 			
@@ -352,9 +413,10 @@ class Simulation:
 				checkpos = (creature.position[0], creature.position[1] + 2)
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[0] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[0] > 100:
+								return True
 				
 				return False
 			
@@ -362,9 +424,10 @@ class Simulation:
 				checkpos = (creature.position[0] + 2, creature.position[1])
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[0] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[0] > 100:
+								return True
 				
 				return False
 			
@@ -372,9 +435,10 @@ class Simulation:
 				checkpos = (creature.position[0], creature.position[1] - 2)
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[1] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[1] > 100:
+								return True
 				
 				return False
 			
@@ -382,9 +446,10 @@ class Simulation:
 				checkpos = (creature.position[0] - 2, creature.position[1])
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[1] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[1] > 100:
+								return True
 				
 				return False
 			
@@ -392,9 +457,10 @@ class Simulation:
 				checkpos = (creature.position[0], creature.position[1] + 2)
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[1] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[1] > 100:
+								return True
 				
 				return False
 			
@@ -402,9 +468,10 @@ class Simulation:
 				checkpos = (creature.position[0] + 2, creature.position[1])
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[1] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[1] > 100:
+								return True
 				
 				return False
 			
@@ -412,9 +479,10 @@ class Simulation:
 				checkpos = (creature.position[0], creature.position[1] - 2)
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[2] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[2] > 100:
+								return True
 				
 				return False
 			
@@ -422,9 +490,10 @@ class Simulation:
 				checkpos = (creature.position[0] - 2, creature.position[1])
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[2] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[2] > 100:
+								return True
 				
 				return False
 			
@@ -432,9 +501,10 @@ class Simulation:
 				checkpos = (creature.position[0], creature.position[1] + 2)
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[2] > 100:
-							return True
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[2] > 100:
+								return True
 				
 				return False
 			
@@ -442,8 +512,49 @@ class Simulation:
 				checkpos = (creature.position[0] + 2, creature.position[1])
 				
 				for c in Simulation.creatures:
-					if c.position == checkpos:
-						if c.colour[2] > 100:
+					if not c.brain == None:
+						if c.position == checkpos:
+							if c.colour[2] > 100:
+								return True
+				
+				return False
+			
+			case Sensor.FoodUp:
+				checkpos = (creature.position[0], creature.position[1] - 1)
+				
+				for c in Simulation.creatures:
+					if c.brain == None:
+						if c.position == checkpos:
+							return True
+				
+				return False
+			
+			case Sensor.FoodLeft:
+				checkpos = (creature.position[0] - 1, creature.position[1])
+				
+				for c in Simulation.creatures:
+					if c.brain == None:
+						if c.position == checkpos:
+							return True
+				
+				return False
+			
+			case Sensor.FoodDown:
+				checkpos = (creature.position[0], creature.position[1] + 1)
+				
+				for c in Simulation.creatures:
+					if c.brain == None:
+						if c.position == checkpos:
+							return True
+				
+				return False
+			
+			case Sensor.FoodRight:
+				checkpos = (creature.position[0] + 1, creature.position[1])
+				
+				for c in Simulation.creatures:
+					if c.brain == None:
+						if c.position == checkpos:
 							return True
 				
 				return False
@@ -497,4 +608,71 @@ class Simulation:
 					return
 				
 				creature.position = checkpos
+			
+			case Behaviour.EatUp:
+				checkpos = (creature.position[0], creature.position[1] - 1)
+				
+				for c in Simulation.creatures:
+					if c.position == checkpos:
+						if c.brain == None:
+							Simulation.creatures.remove(c)
+							creature.energy += 200
+			
+			case Behaviour.EatLeft:
+				checkpos = (creature.position[0] - 1, creature.position[1])
+				
+				for c in Simulation.creatures:
+					if c.position == checkpos:
+						if c.brain == None:
+							Simulation.creatures.remove(c)
+							creature.energy += 200
+			
+			case Behaviour.EatDown:
+				checkpos = (creature.position[0], creature.position[1] + 1)
+				
+				for c in Simulation.creatures:
+					if c.position == checkpos:
+						if c.brain == None:
+							Simulation.creatures.remove(c)
+							creature.energy += 200
+			
+			case Behaviour.EatRight:
+				checkpos = (creature.position[0] + 1, creature.position[1])
+				
+				for c in Simulation.creatures:
+					if c.position == checkpos:
+						if c.brain == None:
+							Simulation.creatures.remove(c)
+							creature.energy += 200
+			
+			case Behaviour.KillUp:
+				checkpos = (creature.position[0], creature.position[1] - 1)
+				
+				for c in Simulation.creatures:
+					if c.position == checkpos:
+						if not c.brain == None:
+							c.die()
+			case Behaviour.KillLeft:
+				checkpos = (creature.position[0] - 1, creature.position[1])
+				
+				for c in Simulation.creatures:
+					if c.position == checkpos:
+						if not c.brain == None:
+							c.die()
+			
+			case Behaviour.KillDown:
+				checkpos = (creature.position[0], creature.position[1] + 1)
+				
+				for c in Simulation.creatures:
+					if c.position == checkpos:
+						if not c.brain == None:
+							c.die()
+			
+			case Behaviour.KillRight:
+				checkpos = (creature.position[0] + 1, creature.position[1])
+				
+				for c in Simulation.creatures:
+					if c.position == checkpos:
+						if not c.brain == None:
+							c.die()
 

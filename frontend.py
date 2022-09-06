@@ -24,7 +24,7 @@ while True:
 		if event.type == pygame.QUIT:
 			sys.exit()
 	
-	if counter == 300:
+	if counter == 3000:
 		counter = 0
 		decrolution.Simulation.update()
 	
