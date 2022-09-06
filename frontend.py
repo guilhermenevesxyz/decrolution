@@ -7,11 +7,9 @@ import pygame.event
 import sys
 import decrolution
 
-delta_time: float = 0
 scale: int = 8
 
 pygame.display.init()
-clock = pygame.time.Clock()
 
 pygame.display.set_mode((800, 600))
 pygame.display.set_caption("Decrolution")
@@ -19,25 +17,27 @@ pygame.display.set_caption("Decrolution")
 
 decrolution.Simulation.initialize()
 
+counter = 0
+
 while True:
-	frame_start = pygame.time.get_ticks()
-	
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			sys.exit()
 	
-	decrolution.Simulation.update()
+	if counter == 300:
+		counter = 0
+		decrolution.Simulation.update()
+	
+	counter += 1
 	
 	pygame.display.get_surface().fill((0x00, 0x00, 0x00))
 	
 	for creature in decrolution.Simulation.creatures:
 		pygame.draw.rect(
 			pygame.display.get_surface(),
-			(0xFF, 0xFF, 0xFF),
+			creature.colour,
 			(creature.position[0] * scale, creature.position[1] * scale, scale, scale)
 		)
 	
 	pygame.display.flip()
-	
-	delta_time = clock.tick() / 1000
 
