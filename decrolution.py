@@ -119,6 +119,21 @@ class Sensor(enum.Enum):
 	FoodLeft = 37
 	FoodDown = 38
 	FoodRight = 39
+	
+	CreUpStr = 40
+	CreLeftStr = 41
+	CreDownStr = 42
+	CreRightStr = 43
+	
+	CreUpWk = 44
+	CreLeftWk = 45
+	CreDownWk = 46
+	CreRightWk = 47
+	
+	FoodUpR = 48
+	FoodLeftR = 49
+	FoodDownR = 50
+	FoodRightR = 51
 
 class Behaviour(enum.Enum):
 	MvUp = 0
@@ -140,17 +155,35 @@ class Brain:
 	def __init__(self):
 		self.data: dict[Sensor, Behaviour] = {
 			Sensor.CreUpR: Behaviour.MvUp,
-			Sensor.CreUp: Behaviour.KillUp,
+			Sensor.CreLeftR: Behaviour.MvLeft,
+			Sensor.CreDownR: Behaviour.MvDown,
+			Sensor.CreRightR: Behaviour.MvRight,
+			
+			Sensor.FoodUpR: Behaviour.MvUp,
+			Sensor.FoodLeftR: Behaviour.MvLeft,
+			Sensor.FoodDownR: Behaviour.MvDown,
+			Sensor.FoodRightR: Behaviour.MvRight,
+			
 			Sensor.FoodUp: Behaviour.EatUp,
+			Sensor.FoodLeft: Behaviour.EatLeft,
+			Sensor.FoodDown: Behaviour.EatDown,
+			Sensor.FoodRight: Behaviour.EatRight,
+			
+			Sensor.CreUpWk: Behaviour.KillUp,
+			Sensor.CreLeftWk: Behaviour.KillLeft,
+			Sensor.CreDownWk: Behaviour.KillDown,
+			Sensor.CreRightWk: Behaviour.KillRight,
 		}
 
 class Creature:
-	def __init__(self, position: Vector2i, colour: Colour, brain: Brain = Brain()):
+	def __init__(self, position: Vector2i, colour: Colour, strength: int,
+			brain: Brain = Brain()):
 		self.position: Vector2i = position
 		self.brain: Brain = brain
 		self.request: Behaviour = None
 		self.colour: Colour = colour
 		self.energy: int = 300
+		self.strength: int = strength
 	
 	def update(self):
 		if self.brain == None:
@@ -185,7 +218,8 @@ class Simulation:
 							random.randrange(0x50, 0x100),
 							random.randrange(0x50, 0x100),
 							random.randrange(0x50, 0x100)
-						)
+						),
+						random.randrange(0, 501)
 					))
 	
 	def update():
@@ -195,7 +229,7 @@ class Simulation:
 	def query(creature: Creature, sensor: Sensor) -> bool:
 		def check_sorroundings(direction: Direction, alive: bool = True,
 				       recursive = False, free_space: bool = False,
-				       colour: bytes = None) -> bool:
+				       colour: bytes = None, strength: bytes = None) -> bool:
 			checkdir: Vector2i = Direction.to_Vector2i(direction)
 			
 			def get_number_of_checks() -> int:
@@ -225,12 +259,19 @@ class Simulation:
 					if not c.position == checkpos: continue
 					if free_space: return False
 					if (c.brain is None) == alive: continue
-					if colour is None: return True
 					
-					match colour:
-						case b'r': return c.colour.r >= 0xA0
-						case b'g': return c.colour.g >= 0xA0
-						case b'b': return c.colour.b >= 0xA0
+					if not colour is None:
+						match colour:
+							case b'r': return c.colour.r >= 0xA0
+							case b'g': return c.colour.g >= 0xA0
+							case b'b': return c.colour.b >= 0xA0
+					
+					if not strength is None:
+						match strength:
+							case b's': return c.strength > creature.strength
+							case b'w': return c.strength <= creature.strength
+					
+					return True
 			
 			if free_space:
 				return True
@@ -287,6 +328,21 @@ class Simulation:
 			case Sensor.FoodLeft: return check_sorroundings(Direction.Left, alive = False)
 			case Sensor.FoodDown: return check_sorroundings(Direction.Down, alive = False)
 			case Sensor.FoodRight: return check_sorroundings(Direction.Right, alive = False)
+			
+			case Sensor.CreUpStr: return check_sorroundings(Direction.Up, strength = b's')
+			case Sensor.CreLeftStr: return check_sorroundings(Direction.Left, strength = b's')
+			case Sensor.CreDownStr: return check_sorroundings(Direction.Down, strength = b's')
+			case Sensor.CreRightStr: return check_sorroundings(Direction.Right, strength = b's')
+			
+			case Sensor.CreUpWk: return check_sorroundings(Direction.Up, strength = b'w')
+			case Sensor.CreLeftWk: return check_sorroundings(Direction.Left, strength = b'w')
+			case Sensor.CreDownWk: return check_sorroundings(Direction.Down, strength = b'w')
+			case Sensor.CreRightWk: return check_sorroundings(Direction.Right, strength = b'w')
+			
+			case Sensor.FoodUpR: return check_sorroundings(Direction.Up, alive = False, recursive = True)
+			case Sensor.FoodLeftR: return check_sorroundings(Direction.Left, alive = False, recursive = True)
+			case Sensor.FoodDownR: return check_sorroundings(Direction.Down, alive = False, recursive = True)
+			case Sensor.FoodRightR: return check_sorroundings(Direction.Right, alive = False, recursive = True)
 	
 	def request(creature: Creature, behaviour: Behaviour) -> bool:
 		def move(dir: Direction):
@@ -315,7 +371,10 @@ class Simulation:
 			
 			for c in Simulation.creatures:
 				if c.position == checkpos and not c.brain is None:
-					c.die()
+					if c.strength > creature.strength:
+						creature.die()
+					else:
+						c.die()
 	
 		match behaviour:
 			case Behaviour.MvUp: move(Direction.Up)
