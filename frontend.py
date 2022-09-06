@@ -24,7 +24,7 @@ while True:
 		if event.type == pygame.QUIT:
 			sys.exit()
 	
-	if counter == 3000:
+	if counter == 1500:
 		counter = 0
 		decrolution.Simulation.update()
 	
@@ -35,8 +35,8 @@ while True:
 	for creature in decrolution.Simulation.creatures:
 		pygame.draw.rect(
 			pygame.display.get_surface(),
-			creature.colour,
-			(creature.position[0] * scale, creature.position[1] * scale, scale, scale)
+			creature.colour.as_tuple(),
+			(creature.position.x * scale, creature.position.y * scale, scale, scale)
 		)
 	
 	pygame.display.flip()
