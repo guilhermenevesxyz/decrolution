@@ -16,7 +16,7 @@ pygame.display.set_mode((800, 600))
 pygame.display.set_caption("Decrolution")
 # pygame.display.set_icon("")
 
-simulation = decrolution.Simulation()
+decrolution.Simulation.initialize()
 
 while True:
 	frame_start = pygame.time.get_ticks()
@@ -25,7 +25,7 @@ while True:
 		if event.type == pygame.QUIT:
 			sys.exit()
 	
-	simulation.update()
+	decrolution.Simulation.update()
 	
 	pygame.display.get_surface().fill((0x00, 0x00, 0x00))
 	
