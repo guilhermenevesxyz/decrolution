@@ -8,6 +8,7 @@ import sys
 import decrolution
 
 delta_time: float = 0
+scale: int = 8
 
 pygame.display.init()
 clock = pygame.time.Clock()
@@ -28,6 +29,13 @@ while True:
 	decrolution.Simulation.update()
 	
 	pygame.display.get_surface().fill((0x00, 0x00, 0x00))
+	
+	for creature in decrolution.Simulation.creatures:
+		pygame.draw.rect(
+			pygame.display.get_surface(),
+			(0xFF, 0xFF, 0xFF),
+			(creature.position[0] * scale, creature.position[1] * scale, scale, scale)
+		)
 	
 	pygame.display.flip()
 	
