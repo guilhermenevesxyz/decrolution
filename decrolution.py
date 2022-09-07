@@ -1,30 +1,48 @@
-import enum
-import random
+from enum         import IntEnum
+from numpy        import empty, array, ndarray, ndindex, min, max, round
+from numpy.random import randint
+from dataclasses  import dataclass
 
-random.seed()
-
-class Vector2i:
-	def __init__(self, x: int = 0, y: int = 0):
-		self.x: int = x
-		self.y: int = y
+class Vector2:
+	def __init__(self, x = 0, y = 0):
+		self.x = x
+		self.y = y
 	
-	def __str__(self):
+	def __repr__(self):
 		return f"({self.x}, {self.y})"
 	
+	def __str__(self):
+		return f"Vector2 ({self.x}, {self.y})"
+	
 	def __add__(self, other):
-		return Vector2i(self.x + other.x, self.y + other.y)
+		return Vector2(
+			self.x + other.x,
+			self.y + other.y
+		)
 	
 	def __sub__(self, other):
-		return Vector2i(self.x - other.x, self.y - other.y)
+		return Vector2(
+			self.x - other.x,
+			self.y - other.y
+		)
 	
 	def __mul__(self, other):
-		return Vector2i(self.x * other.x, self.y * other.y)
+		return Vector2(
+			self.x * other.x,
+			self.y * other.y
+		)
 	
 	def __floordiv__(self, other):
-		return Vector2i(self.x // other.x, self.y // other.y)
+		return Vector2(
+			self.x // other.x,
+			self.y // other.y
+		)
 	
 	def __mod__(self, other):
-		return Vector2i(self.x % other.x, self.y % other.y)
+		return Vector2(
+			self.x % other.x,
+			self.y % other.y
+		)
 	
 	def __eq__(self, other):
 		return self.x == other.x and self.y == other.y
@@ -32,19 +50,31 @@ class Vector2i:
 	def __ne__(self, other):
 		return self.x != other.x or self.y != other.y
 	
-	def coordinates(self):
-		return [self.x, self.y]
+	def as_tuple(self):
+		return (self.x, self.y)
+	
+	def coordinates(self) -> ndarray:
+		return array([self.x, self.y])
+	
+	def in_bounds(self, minb, maxb):
+		if self.x < minb.x or self.y < minb.y or self.x >= maxb.x or self.y >= maxb.y:
+			return False
+		
+		return True
 
 class Colour:
-	def __init__(self, r: int = 0x00, g: int = 0x00, b: int = 0x00):
+	def __init__(self, r, g, b):
 		colour_clamp = lambda n: max([min([n, 0xFF]), 0x00])
 		
-		self.r: int = colour_clamp(r)
-		self.g: int = colour_clamp(g)
-		self.b: int = colour_clamp(b)
+		self.r = round(colour_clamp(r))
+		self.g = round(colour_clamp(g))
+		self.b = round(colour_clamp(b))
+	
+	def __repr__(self):
+		return f"({self.r}, {self.g}, {self.b})"
 	
 	def __str__(self):
-		return f"({self.r}, {self.g}, {self.b})"
+		return f"Colour ({self.r}, {self.g}, {self.b})"
 	
 	def __eq__(self, other):
 		return self.r == other.r and self.g == other.g and self.b == other.b
@@ -55,450 +85,484 @@ class Colour:
 	def as_tuple(self):
 		return (self.r, self.g, self.b)
 
-class Direction(enum.Enum):
-	Up = 0
-	Left = 1
-	Down = 2
+class Direction(IntEnum):
+	Up    = 0
+	Left  = 1
+	Down  = 2
 	Right = 3
 	
-	def to_Vector2i(dir) -> Vector2i:
-		match dir:
-			case Direction.Up: return Vector2i(0, -1)
-			case Direction.Left: return Vector2i(-1, 0)
-			case Direction.Down: return Vector2i(0, 1)
-			case Direction.Right: return Vector2i(1, 0)
+	def as_Vector2(self) -> Vector2:
+		match self:
+			case Direction.Up:    return Vector2(0, -1)
+			case Direction.Left:  return Vector2(-1, 0)
+			case Direction.Down:  return Vector2(0, 1)
+			case Direction.Right: return Vector2(1, 0)
 
-class Sex(enum.Enum):
-	Male = 0
+class Sex(IntEnum):
+	Male   = 0
 	Female = 1
 
-class Sensor(enum.Enum):
-	CreUp = 0
-	CreLeft = 1
-	CreDown = 2
+class Sensor(IntEnum):
+	CreUp    = 0
+	CreLeft  = 1
+	CreDown  = 2
 	CreRight = 3
 	
-	FreeUp = 4
-	FreeLeft = 5
-	FreeDown = 6
+	FreeUp    = 4
+	FreeLeft  = 5
+	FreeDown  = 6
 	FreeRight = 7
 	
-	CreUpR = 8
-	CreLeftR = 9
-	CreDownR = 10
+	CreUpR    = 8
+	CreLeftR  = 9
+	CreDownR  = 10
 	CreRightR = 11
 	
-	CreUpRed = 12
-	CreLeftRed = 13
-	CreDownRed = 14
+	CreUpRed    = 12
+	CreLeftRed  = 13
+	CreDownRed  = 14
 	CreRightRed = 15
 	
-	CreUpGreen = 16
-	CreLeftGreen = 17
-	CreDownGreen = 18
+	CreUpGreen    = 16
+	CreLeftGreen  = 17
+	CreDownGreen  = 18
 	CreRightGreen = 19
 	
-	CreUpBlue = 20
-	CreLeftBlue = 21
-	CreDownBlue = 22
+	CreUpBlue    = 20
+	CreLeftBlue  = 21
+	CreDownBlue  = 22
 	CreRightBlue = 23
 	
-	CreUpRedR = 24
-	CreLeftRedR = 25
-	CreDownRedR = 26
+	CreUpRedR    = 24
+	CreLeftRedR  = 25
+	CreDownRedR  = 26
 	CreRightRedR = 27
 	
-	CreUpGreenR = 28
-	CreLeftGreenR = 29
-	CreDownGreenR = 30
+	CreUpGreenR    = 28
+	CreLeftGreenR  = 29
+	CreDownGreenR  = 30
 	CreRightGreenR = 31
 	
-	CreUpBlueR = 32
-	CreLeftBlueR = 33
-	CreDownBlueR = 34
+	CreUpBlueR    = 32
+	CreLeftBlueR  = 33
+	CreDownBlueR  = 34
 	CreRightBlueR = 35
 	
-	FoodUp = 36
-	FoodLeft = 37
-	FoodDown = 38
+	FoodUp    = 36
+	FoodLeft  = 37
+	FoodDown  = 38
 	FoodRight = 39
 	
-	CreUpStr = 40
-	CreLeftStr = 41
-	CreDownStr = 42
+	CreUpStr    = 40
+	CreLeftStr  = 41
+	CreDownStr  = 42
 	CreRightStr = 43
 	
-	CreUpWk = 44
-	CreLeftWk = 45
-	CreDownWk = 46
+	CreUpWk    = 44
+	CreLeftWk  = 45
+	CreDownWk  = 46
 	CreRightWk = 47
 	
-	FoodUpR = 48
-	FoodLeftR = 49
-	FoodDownR = 50
+	FoodUpR    = 48
+	FoodLeftR  = 49
+	FoodDownR  = 50
 	FoodRightR = 51
 	
-	CreUpSmSex = 52
-	CreLeftSmSex = 53
-	CreDownSmSex = 54
+	CreUpSmSex    = 52
+	CreLeftSmSex  = 53
+	CreDownSmSex  = 54
 	CreRightSmSex = 55
 	
-	CreUpDiffSex = 56
-	CreLeftDiffSex = 57
-	CreDownDiffSex = 58
+	CreUpDiffSex    = 56
+	CreLeftDiffSex  = 57
+	CreDownDiffSex  = 58
 	CreRightDiffSex = 59
 
-class Behaviour(enum.Enum):
-	MvUp = 0
-	MvLeft = 1
-	MvDown = 2
+class Behaviour(IntEnum):
+	MvUp    = 0
+	MvLeft  = 1
+	MvDown  = 2
 	MvRight = 3
 	
-	EatUp = 4
-	EatLeft = 5
-	EatDown = 6
+	EatUp    = 4
+	EatLeft  = 5
+	EatDown  = 6
 	EatRight = 7
 	
-	KillUp = 8
-	KillLeft = 9
-	KillDown = 10
+	KillUp    = 8
+	KillLeft  = 9
+	KillDown  = 10
 	KillRight = 11
 	
-	MateUp = 12
-	MateLeft = 13
-	MateDown = 14
+	MateUp    = 12
+	MateLeft  = 13
+	MateDown  = 14
 	MateRight = 15
 
+@dataclass
 class Brain:
-	def __init__(self):
-		self.data: dict[Sensor, Behaviour] = {
-			Sensor.CreUpR: Behaviour.MvUp,
-			Sensor.CreLeftR: Behaviour.MvLeft,
-			Sensor.CreDownR: Behaviour.MvDown,
-			Sensor.CreRightR: Behaviour.MvRight,
-			
-			Sensor.FoodUpR: Behaviour.MvUp,
-			Sensor.FoodLeftR: Behaviour.MvLeft,
-			Sensor.FoodDownR: Behaviour.MvDown,
-			Sensor.FoodRightR: Behaviour.MvRight,
-			
-			Sensor.FoodUp: Behaviour.EatUp,
-			Sensor.FoodLeft: Behaviour.EatLeft,
-			Sensor.FoodDown: Behaviour.EatDown,
-			Sensor.FoodRight: Behaviour.EatRight,
-			
-			Sensor.CreUpDiffSex: Behaviour.MateUp,
-			Sensor.CreLeftDiffSex: Behaviour.MateLeft,
-			Sensor.CreDownDiffSex: Behaviour.MateDown,
-			Sensor.CreRightDiffSex: Behaviour.MateRight,
-			
-			Sensor.CreUpSmSex: Behaviour.KillUp,
-			Sensor.CreLeftSmSex: Behaviour.KillLeft,
-			Sensor.CreDownSmSex: Behaviour.KillDown,
-			Sensor.CreRightSmSex: Behaviour.KillRight,
-		}
+	data = {
+		Sensor.CreUpR: Behaviour.MvUp,
+		Sensor.CreLeftR: Behaviour.MvLeft,
+		Sensor.CreDownR: Behaviour.MvDown,
+		Sensor.CreRightR: Behaviour.MvRight,
+		
+		Sensor.FoodUpR: Behaviour.MvUp,
+		Sensor.FoodLeftR: Behaviour.MvLeft,
+		Sensor.FoodDownR: Behaviour.MvDown,
+		Sensor.FoodRightR: Behaviour.MvRight,
+		
+		Sensor.FoodUp: Behaviour.EatUp,
+		Sensor.FoodLeft: Behaviour.EatLeft,
+		Sensor.FoodDown: Behaviour.EatDown,
+		Sensor.FoodRight: Behaviour.EatRight,
+		
+		Sensor.CreUpDiffSex: Behaviour.MateUp,
+		Sensor.CreLeftDiffSex: Behaviour.MateLeft,
+		Sensor.CreDownDiffSex: Behaviour.MateDown,
+		Sensor.CreRightDiffSex: Behaviour.MateRight,
+		
+		Sensor.CreUpSmSex: Behaviour.KillUp,
+		Sensor.CreLeftSmSex: Behaviour.KillLeft,
+		Sensor.CreDownSmSex: Behaviour.KillDown,
+		Sensor.CreRightSmSex: Behaviour.KillRight,
+	}
 
 class Creature:
-	def __init__(self, position: Vector2i, colour: Colour, strength: int,
-			sex: Sex, brain: Brain = Brain()):
-		self.position: Vector2i = position
-		self.brain: Brain = brain
-		self.request: Behaviour = None
-		self.colour: Colour = colour
-		self.energy: int = 300
-		self.strength: int = strength
-		self.sex: Sex = sex
-	
-	def from_parents(parent1, parent2, position: Vector2i):
-		c = Creature(
-			position,
-			Colour(
-				random.randrange(
-					min(parent1.colour.r, parent2.colour.r),
-					max(parent1.colour.r, parent2.colour.r) + 1
-				),
-				random.randrange(
-					min(parent1.colour.g, parent2.colour.g),
-					max(parent1.colour.g, parent2.colour.g) + 1
-				),
-				random.randrange(
-					min(parent1.colour.b, parent2.colour.b),
-					max(parent1.colour.b, parent2.colour.b) + 1
-				)
-			),
-			random.randrange(
-				min(parent1.strength, parent2.strength),
-				max(parent1.strength, parent2.strength) + 1
-			),
-			Sex(random.randrange(0, 2))
-		)
-		
-		return c
-	
-	def update(self):
-		if self.brain == None:
-			return
-		
-		for sensor, behaviour in self.brain.data.items():
-			self.energy -= 1
-			
-			if self.energy == 0:
-				self.die()
-				
-			if Simulation.query(self, sensor):
-				if Simulation.request(self, behaviour):
-					break
-	
-	def die(self):
-		self.brain = None
-		self.request = None
-		self.colour = Colour(0x40, 0x00, 0x00)
+	def __init__(self, colour: Colour, strength: int, sex: Sex, brain: Brain = Brain()):
+		self.brain    = brain
+		self.colour   = colour
+		self.energy   = 300
+		self.strength = strength
+		self.sex      = sex
 
-class Simulation:
-	creatures: list[Creature] = []
-	size: int = 20
+SIZE = Vector2(20, 20)
+GRID = empty(SIZE.as_tuple(), dtype=object)
+
+def initialize():
+	for x, y in ndindex(GRID.shape):
+		if not randint(0, 101) <= 10:
+			continue
+		
+		GRID[x, y] = Creature(
+			Colour(
+				randint(0x50, 0x100),
+				randint(0x50, 0x100),
+				randint(0x50, 0x100)
+			),
+			randint(0, 501),
+			Sex(randint(0, 2))
+		)
+
+def _check_sorroundings(pos: Vector2,            # The position whose sorroundings are to check.
+		        dir: Direction,          # Where to check.
+		        alive           = True,  # Whether the creature should be dead or alive.
+		        onecell         = True,  # Whether to check one cell or more.
+		        creature        = True,  # Whether to look for free space or a creature.
+		        colour: bytes   = None,  # The colour of the creature (b'r' -> red, b'g' -> green, b'b' -> blue).
+		        strength: bytes = None,  # The strength of the creature (b's' -> stronger, b'w' -> weaker).
+		        diff_sex: bool  = None   # Whether the creature should have a different sex or not (None -> it doesn't matter).
+		) -> bool:
+	checkdir = Direction.as_Vector2(dir)
 	
-	def initialize():
-		for i in range(Simulation.size):
-			for j in range(Simulation.size):
-				if random.randrange(0, 101) <= 10:
-					Simulation.creatures.append(Creature(
-						Vector2i(i, j),
-						Colour(
-							random.randrange(0x50, 0x100),
-							random.randrange(0x50, 0x100),
-							random.randrange(0x50, 0x100)
-						),
-						random.randrange(0, 501),
-						Sex(random.randrange(0, 2))
-					))
+	checks = 0
 	
-	def update():
-		for creature in Simulation.creatures:
-			creature.update()
+	if onecell:
+		checks = 1
 	
-	def query(creature: Creature, sensor: Sensor) -> bool:
-		def check_sorroundings(direction: Direction, alive: bool = True,
-				       recursive = False, free_space: bool = False,
-				       colour: bytes = None, strength: bytes = None,
-				       diff_sex: bool = None) -> bool:
-			checkdir: Vector2i = Direction.to_Vector2i(direction)
-			
-			def get_number_of_checks() -> int:
-				if not recursive:
-					return 1
-				
-				if not checkdir.x == 0: # horizontal
-					if checkdir.x > 0:
-						return Simulation.size - creature.position.x
-					else:
-						return creature.position.x
-				else: # vertical
-					if checkdir.y > 0:
-						return Simulation.size - creature.position.y
-					else:
-						return creature.position.y
-			
-			checks = get_number_of_checks()
-			del get_number_of_checks
-			
-			checkpos: Vector2i = creature.position
-			
-			for _ in range(checks):
-				checkpos += checkdir
-			
-				for c in Simulation.creatures:
-					if c.position != checkpos: continue
-					if free_space: return False
-					if (c.brain is None) == alive: continue
-					
-					if not colour is None:
-						match colour:
-							case b'r': return c.colour.r >= 0xA0
-							case b'g': return c.colour.g >= 0xA0
-							case b'b': return c.colour.b >= 0xA0
-					
-					if not strength is None:
-						match strength:
-							case b's': return c.strength > creature.strength
-							case b'w': return c.strength <= creature.strength
-					
-					if not diff_sex is None:
-						match diff_sex:
-							case True: return c.sex != creature.sex
-							case False: return c.sex == creature.sex
-					
-					return True
-			
-			if free_space:
-				return True
-			else:
-				return False
+	if not checkdir.x == 0: # horizontal
+		checks = SIZE.x - pos.x if not checkdir.x > 0 else pos.x
+	else: # vertical
+		checks = SIZE.y - pos.y if not checkdir.y > 0 else pos.y
 	
-		match sensor:
-			case Sensor.CreUp: return check_sorroundings(Direction.Up)
-			case Sensor.CreLeft: return check_sorroundings(Direction.Left)
-			case Sensor.CreDown: return check_sorroundings(Direction.Down)
-			case Sensor.CreRight: return check_sorroundings(Direction.Right)
-			
-			case Sensor.FreeUp: return check_sorroundings(Direction.Up, free_space = True)
-			case Sensor.FreeLeft: return check_sorroundings(Direction.Left, free_space = True)
-			case Sensor.FreeDown: return check_sorroundings(Direction.Down, free_space = True)
-			case Sensor.FreeRight: return check_sorroundings(Direction.Right, free_space = True)
-			
-			case Sensor.CreUpR: return check_sorroundings(Direction.Up, recursive = True)
-			case Sensor.CreLeftR: return check_sorroundings(Direction.Left, recursive = True)
-			case Sensor.CreDownR: return check_sorroundings(Direction.Down, recursive = True)
-			case Sensor.CreRightR: return check_sorroundings(Direction.Right, recursive = True)
-			
-			case Sensor.CreUpRed: return check_sorroundings(Direction.Right, colour = b'r')
-			case Sensor.CreLeftRed: return check_sorroundings(Direction.Right, colour = b'r')
-			case Sensor.CreDownRed: return check_sorroundings(Direction.Right, colour = b'r')
-			case Sensor.CreRightRed: return check_sorroundings(Direction.Right, colour = b'r')
-			
-			case Sensor.CreUpGreen: return check_sorroundings(Direction.Right, colour = b'g')
-			case Sensor.CreLeftGreen: return check_sorroundings(Direction.Right, colour = b'g')
-			case Sensor.CreDownGreen: return check_sorroundings(Direction.Right, colour = b'g')
-			case Sensor.CreRightGreen: return check_sorroundings(Direction.Right, colour = b'g')
-			
-			case Sensor.CreUpBlue: return check_sorroundings(Direction.Right, colour = b'b')
-			case Sensor.CreLeftBlue: return check_sorroundings(Direction.Right, colour = b'b')
-			case Sensor.CreDownBlue: return check_sorroundings(Direction.Right, colour = b'b')
-			case Sensor.CreRightBlue: return check_sorroundings(Direction.Right, colour = b'b')
-			
-			case Sensor.CreUpRedR: return check_sorroundings(Direction.Right, colour = b'r', recursive = True)
-			case Sensor.CreLeftRedR: return check_sorroundings(Direction.Right, colour = b'r', recursive = True)
-			case Sensor.CreDownRedR: return check_sorroundings(Direction.Right, colour = b'r', recursive = True)
-			case Sensor.CreRightRedR: return check_sorroundings(Direction.Right, colour = b'r', recursive = True)
-			
-			case Sensor.CreUpGreenR: return check_sorroundings(Direction.Right, colour = b'g', recursive = True)
-			case Sensor.CreLeftGreenR: return check_sorroundings(Direction.Right, colour = b'g', recursive = True)
-			case Sensor.CreDownGreenR: return check_sorroundings(Direction.Right, colour = b'g', recursive = True)
-			case Sensor.CreRightGreenR: return check_sorroundings(Direction.Right, colour = b'g', recursive = True)
-			
-			case Sensor.CreUpBlueR: return check_sorroundings(Direction.Right, colour = b'b', recursive = True)
-			case Sensor.CreLeftBlueR: return check_sorroundings(Direction.Right, colour = b'b', recursive = True)
-			case Sensor.CreDownBlueR: return check_sorroundings(Direction.Right, colour = b'b', recursive = True)
-			case Sensor.CreRightBlueR: return check_sorroundings(Direction.Right, colour = b'b', recursive = True)
-			
-			case Sensor.FoodUp: return check_sorroundings(Direction.Up, alive = False)
-			case Sensor.FoodLeft: return check_sorroundings(Direction.Left, alive = False)
-			case Sensor.FoodDown: return check_sorroundings(Direction.Down, alive = False)
-			case Sensor.FoodRight: return check_sorroundings(Direction.Right, alive = False)
-			
-			case Sensor.CreUpStr: return check_sorroundings(Direction.Up, strength = b's')
-			case Sensor.CreLeftStr: return check_sorroundings(Direction.Left, strength = b's')
-			case Sensor.CreDownStr: return check_sorroundings(Direction.Down, strength = b's')
-			case Sensor.CreRightStr: return check_sorroundings(Direction.Right, strength = b's')
-			
-			case Sensor.CreUpWk: return check_sorroundings(Direction.Up, strength = b'w')
-			case Sensor.CreLeftWk: return check_sorroundings(Direction.Left, strength = b'w')
-			case Sensor.CreDownWk: return check_sorroundings(Direction.Down, strength = b'w')
-			case Sensor.CreRightWk: return check_sorroundings(Direction.Right, strength = b'w')
-			
-			case Sensor.FoodUpR: return check_sorroundings(Direction.Up, alive = False, recursive = True)
-			case Sensor.FoodLeftR: return check_sorroundings(Direction.Left, alive = False, recursive = True)
-			case Sensor.FoodDownR: return check_sorroundings(Direction.Down, alive = False, recursive = True)
-			case Sensor.FoodRightR: return check_sorroundings(Direction.Right, alive = False, recursive = True)
+	if checks < 0:
+		checks = 0
 	
-			case Sensor.CreUpSmSex: return check_sorroundings(Direction.Up, diff_sex = False)
-			case Sensor.CreLeftSmSex: return check_sorroundings(Direction.Left, diff_sex = False)
-			case Sensor.CreDownSmSex: return check_sorroundings(Direction.Down, diff_sex = False)
-			case Sensor.CreRightSmSex: return check_sorroundings(Direction.Right, diff_sex = False)
-			
-			case Sensor.CreUpDiffSex: return check_sorroundings(Direction.Up, diff_sex = True)
-			case Sensor.CreLeftDiffSex: return check_sorroundings(Direction.Left, diff_sex = True)
-			case Sensor.CreDownDiffSex: return check_sorroundings(Direction.Down, diff_sex = True)
-			case Sensor.CreRightDiffSex: return check_sorroundings(Direction.Right, diff_sex = True)
+	checkpos = pos
 	
-	def request(creature: Creature, behaviour: Behaviour) -> bool:
-		def move(dir: Direction) -> bool:
-			checkpos = creature.position + Direction.to_Vector2i(dir)
-			
-			for c in checkpos.coordinates():
-				if c < 0 or c > Simulation.size:
-					return False
-			
-			for c in Simulation.creatures:
-				if c.position == checkpos:
-					return False
-			
-			creature.position = checkpos
+	for _ in range(checks):
+		checkpos += checkdir
+		
+		if not checkpos.in_bounds(Vector2(), SIZE):
+			continue
+		
+		checked = GRID[checkpos.x, checkpos.y]
+		checker = GRID[pos.x, pos.y]
+		
+		if checked is None:
+			continue
+		
+		if (checked.brain is None) == alive:
+			continue
+		
+		if not colour is None:
+			match colour:
+				case b'r': return checked.colour.r >= 0xA0
+				case b'g': return checked.colour.g >= 0xA0
+				case b'b': return checked.colour.b >= 0xA0
+				case _:    return False
+		
+		if not strength is None:
+			match strength:
+				case b's': return checked.strength > checker.strength
+				case b'w': return checked.strength <= checker.strength
+				case _:    return False
+		
+		if not diff_sex is None:
+			match diff_sex:
+				case True:  return checked.sex != checker.sex
+				case False: return checked.sex == checker.sex
+				case _:     return False
+		
+		return True
+	
+	if creature:
+		return False
+	else:
+		return True
+	
+def _query(pos: Vector2, sensor: Sensor) -> bool:	
+	match sensor:
+		case Sensor.CreUp:    return _check_sorroundings(pos, Direction.Up)
+		case Sensor.CreLeft:  return _check_sorroundings(pos, Direction.Left)
+		case Sensor.CreDown:  return _check_sorroundings(pos, Direction.Down)
+		case Sensor.CreRight: return _check_sorroundings(pos, Direction.Right)
+		
+		case Sensor.FreeUp:    return _check_sorroundings(pos, Direction.Up, creature = False)
+		case Sensor.FreeLeft:  return _check_sorroundings(pos, Direction.Left, creature = False)
+		case Sensor.FreeDown:  return _check_sorroundings(pos, Direction.Down, creature = False)
+		case Sensor.FreeRight: return _check_sorroundings(pos, Direction.Right, creature = False)
+		
+		case Sensor.CreUpR:    return _check_sorroundings(pos, Direction.Up, onecell = False)
+		case Sensor.CreLeftR:  return _check_sorroundings(pos, Direction.Left, onecell = False)
+		case Sensor.CreDownR:  return _check_sorroundings(pos, Direction.Down, onecell = False)
+		case Sensor.CreRightR: return _check_sorroundings(pos, Direction.Right, onecell = False)
+		
+		case Sensor.CreUpRed:    return _check_sorroundings(pos, Direction.Right, colour = b'r')
+		case Sensor.CreLeftRed:  return _check_sorroundings(pos, Direction.Right, colour = b'r')
+		case Sensor.CreDownRed:  return _check_sorroundings(pos, Direction.Right, colour = b'r')
+		case Sensor.CreRightRed: return _check_sorroundings(pos, Direction.Right, colour = b'r')
+		
+		case Sensor.CreUpGreen:    return _check_sorroundings(pos, Direction.Right, colour = b'g')
+		case Sensor.CreLeftGreen:  return _check_sorroundings(pos, Direction.Right, colour = b'g')
+		case Sensor.CreDownGreen:  return _check_sorroundings(pos, Direction.Right, colour = b'g')
+		case Sensor.CreRightGreen: return _check_sorroundings(pos, Direction.Right, colour = b'g')
+		
+		case Sensor.CreUpBlue:    return _check_sorroundings(pos, Direction.Right, colour = b'b')
+		case Sensor.CreLeftBlue:  return _check_sorroundings(pos, Direction.Right, colour = b'b')
+		case Sensor.CreDownBlue:  return _check_sorroundings(pos, Direction.Right, colour = b'b')
+		case Sensor.CreRightBlue: return _check_sorroundings(pos, Direction.Right, colour = b'b')
+		
+		case Sensor.CreUpRedR:    return _check_sorroundings(pos, Direction.Right, colour = b'r', onecell = False)
+		case Sensor.CreLeftRedR:  return _check_sorroundings(pos, Direction.Right, colour = b'r', onecell = False)
+		case Sensor.CreDownRedR:  return _check_sorroundings(pos, Direction.Right, colour = b'r', onecell = False)
+		case Sensor.CreRightRedR: return _check_sorroundings(pos, Direction.Right, colour = b'r', onecell = False)
+		
+		case Sensor.CreUpGreenR:    return _check_sorroundings(pos, Direction.Right, colour = b'g', onecell = False)
+		case Sensor.CreLeftGreenR:  return _check_sorroundings(pos, Direction.Right, colour = b'g', onecell = False)
+		case Sensor.CreDownGreenR:  return _check_sorroundings(pos, Direction.Right, colour = b'g', onecell = False)
+		case Sensor.CreRightGreenR: return _check_sorroundings(pos, Direction.Right, colour = b'g', onecell = False)
+		
+		case Sensor.CreUpBlueR:    return _check_sorroundings(pos, Direction.Right, colour = b'b', onecell = False)
+		case Sensor.CreLeftBlueR:  return _check_sorroundings(pos, Direction.Right, colour = b'b', onecell = False)
+		case Sensor.CreDownBlueR:  return _check_sorroundings(pos, Direction.Right, colour = b'b', onecell = False)
+		case Sensor.CreRightBlueR: return _check_sorroundings(pos, Direction.Right, colour = b'b', onecell = False)
+		
+		case Sensor.FoodUp:    return _check_sorroundings(pos, Direction.Up, alive = False)
+		case Sensor.FoodLeft:  return _check_sorroundings(pos, Direction.Left, alive = False)
+		case Sensor.FoodDown:  return _check_sorroundings(pos, Direction.Down, alive = False)
+		case Sensor.FoodRight: return _check_sorroundings(pos, Direction.Right, alive = False)
+		
+		case Sensor.CreUpStr:    return _check_sorroundings(pos, Direction.Up, strength = b's')
+		case Sensor.CreLeftStr:  return _check_sorroundings(pos, Direction.Left, strength = b's')
+		case Sensor.CreDownStr:  return _check_sorroundings(pos, Direction.Down, strength = b's')
+		case Sensor.CreRightStr: return _check_sorroundings(pos, Direction.Right, strength = b's')
+		
+		case Sensor.CreUpWk:    return _check_sorroundings(pos, Direction.Up, strength = b'w')
+		case Sensor.CreLeftWk:  return _check_sorroundings(pos, Direction.Left, strength = b'w')
+		case Sensor.CreDownWk:  return _check_sorroundings(pos, Direction.Down, strength = b'w')
+		case Sensor.CreRightWk: return _check_sorroundings(pos, Direction.Right, strength = b'w')
+		
+		case Sensor.FoodUpR:    return _check_sorroundings(pos, Direction.Up, alive = False, onecell = False)
+		case Sensor.FoodLeftR:  return _check_sorroundings(pos, Direction.Left, alive = False, onecell = False)
+		case Sensor.FoodDownR:  return _check_sorroundings(pos, Direction.Down, alive = False, onecell = False)
+		case Sensor.FoodRightR: return _check_sorroundings(pos, Direction.Right, alive = False, onecell = False)
+		
+		case Sensor.CreUpSmSex:    return _check_sorroundings(pos, Direction.Up, diff_sex = False)
+		case Sensor.CreLeftSmSex:  return _check_sorroundings(pos, Direction.Left, diff_sex = False)
+		case Sensor.CreDownSmSex:  return _check_sorroundings(pos, Direction.Down, diff_sex = False)
+		case Sensor.CreRightSmSex: return _check_sorroundings(pos, Direction.Right, diff_sex = False)
+		
+		case Sensor.CreUpDiffSex:    return _check_sorroundings(pos, Direction.Up, diff_sex = True)
+		case Sensor.CreLeftDiffSex:  return _check_sorroundings(pos, Direction.Left, diff_sex = True)
+		case Sensor.CreDownDiffSex:  return _check_sorroundings(pos, Direction.Down, diff_sex = True)
+		case Sensor.CreRightDiffSex: return _check_sorroundings(pos, Direction.Right, diff_sex = True)
+		
+		case _: return False
+
+def _move(pos: Vector2, dir: Direction) -> bool:
+	checkpos = pos + Direction.as_Vector2(dir)
+	
+	for c, in ndindex(checkpos.coordinates().shape):
+		if c < 0 or c > SIZE.coordinates()[c]:
+			return False
+	
+	if not GRID[checkpos.x, checkpos.y] is None:
+		return False
+	
+	GRID[checkpos.x, checkpos.y] = GRID[pos.x, pos.y]
+	GRID[pos.x, pos.y] = None
+	
+	return True
+
+def _eat(pos: Vector2, dir: Direction) -> bool:
+	checkpos = pos + Direction.as_Vector2(dir)
+	
+	if GRID[checkpos.x, checkpos.y] is None:
+		return False
+	
+	if not GRID[checkpos.x, checkpos.y].brain is None:
+		return False
+	
+	GRID[checkpos.x, checkpos.y] = None
+	GRID[pos.x, pos.y].energy += 200
+	
+	return True
+
+def _turn_to_food(pos: Vector2):
+	if GRID[pos.x, pos.y] is None:
+		return
+	
+	GRID[pos.x, pos.y].brain  = None
+	GRID[pos.x, pos.y].colour = Colour(0x40, 0x00, 0x00)
+
+def _kill(pos: Vector2, dir: Direction) -> bool:
+	checkpos = pos + Direction.as_Vector2(dir)
+	
+	if GRID[checkpos.x, checkpos.y] is None:
+		return False
+	
+	if not GRID[checkpos.x, checkpos.y].brain is None:
+		return False
+	
+	if GRID[checkpos.x, checkpos.y].strength > GRID[pos.x, pos.y].strength:
+		_turn_to_food(pos)
+		return True
+	else:
+		_turn_to_food(checkpos)
+		return True
+
+def _mate(pos: Vector2, dir: Direction) -> bool:
+	checkpos = pos + Direction.as_Vector2(dir)
+	
+	# Incel.
+	if GRID[checkpos.x, checkpos.y] is None:
+		return False
+	
+	# Sick illegal shit.
+	if GRID[checkpos.x, checkpos.y].brain is None:
+		return False
+	
+	# Nothing against it, it just doesn't work.
+	if GRID[checkpos.x, checkpos.y].sex == GRID[pos.x, pos.y].sex:
+		return False
+	
+	for d in Direction:
+		dirvec = pos + Direction.as_Vector2(d)
+		
+		if not dirvec.in_bounds(Vector2(), SIZE):
+			continue
+		
+		if GRID[dirvec.x, dirvec.y] is None:
+			GRID[dirvec.x, dirvec.y] = Creature(
+				Colour(
+					randint(
+						min([
+							GRID[pos.x, pos.y].colour.r,
+							GRID[checkpos.x, checkpos.y].colour.r
+						]),
+						max([
+							GRID[pos.x, pos.y].colour.r,
+							GRID[checkpos.x, checkpos.y].colour.r
+						]) + 1
+					),
+					randint(
+						min([
+							GRID[pos.x, pos.y].colour.g,
+							GRID[checkpos.x, checkpos.y].colour.g
+						]),
+						max([
+							GRID[pos.x, pos.y].colour.g,
+							GRID[checkpos.x, checkpos.y].colour.g
+						]) + 1
+					),
+					randint(
+						min([
+							GRID[pos.x, pos.y].colour.b,
+							GRID[checkpos.x, checkpos.y].colour.b
+						]),
+						max([
+							GRID[pos.x, pos.y].colour.b,
+							GRID[checkpos.x, checkpos.y].colour.b
+						]) + 1
+					)
+				),
+				randint(
+					min([
+						GRID[pos.x, pos.y].strength,
+						GRID[checkpos.x, checkpos.y].strength
+					]),
+					max([
+						GRID[pos.x, pos.y].strength,
+						GRID[checkpos.x, checkpos.y].strength
+					]) + 1
+				),
+				Sex(randint(0, 2))
+			)
 			
 			return True
-		
-		def eat(dir: Direction) -> bool:
-			checkpos = creature.position + Direction.to_Vector2i(dir)
-			
-			for c in Simulation.creatures:
-				if c.position == checkpos and c.brain is None:
-					Simulation.creatures.remove(c)
-					creature.energy += 200
-					return True
-			
-			return False
-		
-		def kill(dir: Direction) -> bool:
-			checkpos = creature.position + Direction.to_Vector2i(dir)
-			
-			for c in Simulation.creatures:
-				if c.position == checkpos and not c.brain is None:
-					if c.strength > creature.strength:
-						creature.die()
-						return True
-					else:
-						c.die()
-						return True
-			
-			return False
-		
-		def mate(dir: Direction) -> bool:
-			checkpos = creature.position + Direction.to_Vector2i(dir)
-			
-			for c in Simulation.creatures:
-				if not c.position == checkpos or c.brain is None or c.sex == creature.sex:
-					continue
-				
-				def dir_free(dd: Direction) -> bool:
-					cp = creature.position + Direction.to_Vector2i(dd)
-					
-					for c2 in Simulation.creatures:
-						if c.position == cp:
-							return False
-					
-					return True
-				
-				for d in Direction:
-					if not dir_free(d): continue
-					
-					Simulation.creatures.append(Creature.from_parents(
-						creature,
-						c,
-						creature.position + Direction.to_Vector2i(d)
-					))
-						
-					return True
-			
-			return False
 	
-		match behaviour:
-			case Behaviour.MvUp: return move(Direction.Up)
-			case Behaviour.MvLeft: return move(Direction.Left)
-			case Behaviour.MvDown: return move(Direction.Down)
-			case Behaviour.MvRight: return move(Direction.Right)
+	return False
+
+def _request(pos: Vector2, behaviour: Behaviour) -> bool:
+	match behaviour:
+		case Behaviour.MvUp:    return _move(pos, Direction.Up)
+		case Behaviour.MvLeft:  return _move(pos, Direction.Left)
+		case Behaviour.MvDown:  return _move(pos, Direction.Down)
+		case Behaviour.MvRight: return _move(pos, Direction.Right)
+		
+		case Behaviour.EatUp:    return _eat(pos, Direction.Up)
+		case Behaviour.EatLeft:  return _eat(pos, Direction.Left)
+		case Behaviour.EatDown:  return _eat(pos, Direction.Down)
+		case Behaviour.EatRight: return _eat(pos, Direction.Right)
+		
+		case Behaviour.KillUp:    return _kill(pos, Direction.Up)
+		case Behaviour.KillLeft:  return _kill(pos, Direction.Left)
+		case Behaviour.KillDown:  return _kill(pos, Direction.Down)
+		case Behaviour.KillRight: return _kill(pos, Direction.Right)
+		
+		case Behaviour.MateUp:    return _mate(pos, Direction.Up)
+		case Behaviour.MateLeft:  return _mate(pos, Direction.Left)
+		case Behaviour.MateDown:  return _mate(pos, Direction.Down)
+		case Behaviour.MateRight: return _mate(pos, Direction.Right)
+
+def update():
+	for x, y in ndindex(GRID.shape):
+		creature = GRID[x, y]
+		
+		if creature == None:
+			continue
+		
+		if creature.brain == None:
+			continue
+		
+		for sensor, behaviour in creature.brain.data.items():
+			creature.energy -= 1
 			
-			case Behaviour.EatUp: return eat(Direction.Up)
-			case Behaviour.EatLeft: return eat(Direction.Left)
-			case Behaviour.EatDown: return eat(Direction.Down)
-			case Behaviour.EatRight: return eat(Direction.Right)
+			if creature.energy == 0:
+				_turn_to_food(Vector2(x, y))
 			
-			case Behaviour.KillUp: return kill(Direction.Up)
-			case Behaviour.KillLeft: return kill(Direction.Left)
-			case Behaviour.KillDown: return kill(Direction.Down)
-			case Behaviour.KillRight: return kill(Direction.Right)
-			
-			case Behaviour.MateUp: return mate(Direction.Up)
-			case Behaviour.MateLeft: return mate(Direction.Left)
-			case Behaviour.MateDown: return mate(Direction.Down)
-			case Behaviour.MateRight: return mate(Direction.Right)
+			if _query(Vector2(x, y), sensor):
+				if _request(Vector2(x, y), behaviour):
+					break
 

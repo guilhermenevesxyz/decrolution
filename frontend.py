@@ -1,43 +1,47 @@
 if not __name__ == "__main__":
 	raise ImportError("Do not import the Decrolution front-end as a library!")
 
-import pygame.display
-import pygame.time
-import pygame.event
-import sys
-import decrolution
+from pygame      import display, event, draw, locals
+from sys         import exit
+from decrolution import initialize, update, GRID
+from numpy       import ndindex
 
 scale: int = 8
 
-pygame.display.init()
+display.init()
 
-pygame.display.set_mode((800, 600))
-pygame.display.set_caption("Decrolution")
-# pygame.display.set_icon("")
+display.set_mode((800, 600))
+display.set_caption("Decrolution")
+#display.set_icon("")
 
-decrolution.Simulation.initialize()
+initialize()
 
 counter = 0
 
 while True:
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
-			sys.exit()
+	for e in event.get():
+		if e.type == locals.QUIT:
+			exit()
 	
 	if counter == 1500:
 		counter = 0
-		decrolution.Simulation.update()
+		update()
 	
 	counter += 1
 	
-	pygame.display.get_surface().fill((0x00, 0x00, 0x00))
+	display.get_surface().fill((0x00, 0x00, 0x00))
 	
-	for creature in decrolution.Simulation.creatures:
-		pygame.draw.rect(
-			pygame.display.get_surface(),
-			creature.colour.as_tuple(),
-			(creature.position.x * scale, creature.position.y * scale, scale, scale)
+	for x, y in ndindex(GRID.shape):
+		cell = GRID[x, y]
+		
+		if cell is None:
+			continue
+		
+		draw.rect(
+			display.get_surface(),
+			cell.colour.as_tuple(),
+			(x * scale, y * scale, scale, scale)
 		)
 	
-	pygame.display.flip()
+	display.flip()
 
