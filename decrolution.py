@@ -68,6 +68,10 @@ class Direction(enum.Enum):
 			case Direction.Down: return Vector2i(0, 1)
 			case Direction.Right: return Vector2i(1, 0)
 
+class Sex(enum.Enum):
+	Male = 0
+	Female = 1
+
 class Sensor(enum.Enum):
 	CreUp = 0
 	CreLeft = 1
@@ -133,6 +137,16 @@ class Sensor(enum.Enum):
 	FoodLeftR = 49
 	FoodDownR = 50
 	FoodRightR = 51
+	
+	CreUpSmSex = 52
+	CreLeftSmSex = 53
+	CreDownSmSex = 54
+	CreRightSmSex = 55
+	
+	CreUpDiffSex = 56
+	CreLeftDiffSex = 57
+	CreDownDiffSex = 58
+	CreRightDiffSex = 59
 
 class Behaviour(enum.Enum):
 	MvUp = 0
@@ -149,6 +163,11 @@ class Behaviour(enum.Enum):
 	KillLeft = 9
 	KillDown = 10
 	KillRight = 11
+	
+	MateUp = 12
+	MateLeft = 13
+	MateDown = 14
+	MateRight = 15
 
 class Brain:
 	def __init__(self):
@@ -168,21 +187,53 @@ class Brain:
 			Sensor.FoodDown: Behaviour.EatDown,
 			Sensor.FoodRight: Behaviour.EatRight,
 			
-			Sensor.CreUpWk: Behaviour.KillUp,
-			Sensor.CreLeftWk: Behaviour.KillLeft,
-			Sensor.CreDownWk: Behaviour.KillDown,
-			Sensor.CreRightWk: Behaviour.KillRight,
+			Sensor.CreUpDiffSex: Behaviour.MateUp,
+			Sensor.CreLeftDiffSex: Behaviour.MateLeft,
+			Sensor.CreDownDiffSex: Behaviour.MateDown,
+			Sensor.CreRightDiffSex: Behaviour.MateRight,
+			
+			Sensor.CreUpSmSex: Behaviour.KillUp,
+			Sensor.CreLeftSmSex: Behaviour.KillLeft,
+			Sensor.CreDownSmSex: Behaviour.KillDown,
+			Sensor.CreRightSmSex: Behaviour.KillRight,
 		}
 
 class Creature:
 	def __init__(self, position: Vector2i, colour: Colour, strength: int,
-			brain: Brain = Brain()):
+			sex: Sex, brain: Brain = Brain()):
 		self.position: Vector2i = position
 		self.brain: Brain = brain
 		self.request: Behaviour = None
 		self.colour: Colour = colour
 		self.energy: int = 300
 		self.strength: int = strength
+		self.sex: Sex = sex
+	
+	def from_parents(parent1, parent2, position: Vector2i):
+		c = Creature(
+			position,
+			Colour(
+				random.randrange(
+					min(parent1.colour.r, parent2.colour.r),
+					max(parent1.colour.r, parent2.colour.r) + 1
+				),
+				random.randrange(
+					min(parent1.colour.g, parent2.colour.g),
+					max(parent1.colour.g, parent2.colour.g) + 1
+				),
+				random.randrange(
+					min(parent1.colour.b, parent2.colour.b),
+					max(parent1.colour.b, parent2.colour.b) + 1
+				)
+			),
+			random.randrange(
+				min(parent1.strength, parent2.strength),
+				max(parent1.strength, parent2.strength) + 1
+			),
+			Sex(random.randrange(0, 2))
+		)
+		
+		return c
 	
 	def update(self):
 		if self.brain == None:
@@ -218,7 +269,8 @@ class Simulation:
 							random.randrange(0x50, 0x100),
 							random.randrange(0x50, 0x100)
 						),
-						random.randrange(0, 501)
+						random.randrange(0, 501),
+						Sex(random.randrange(0, 2))
 					))
 	
 	def update():
@@ -228,7 +280,8 @@ class Simulation:
 	def query(creature: Creature, sensor: Sensor) -> bool:
 		def check_sorroundings(direction: Direction, alive: bool = True,
 				       recursive = False, free_space: bool = False,
-				       colour: bytes = None, strength: bytes = None) -> bool:
+				       colour: bytes = None, strength: bytes = None,
+				       diff_sex: bool = None) -> bool:
 			checkdir: Vector2i = Direction.to_Vector2i(direction)
 			
 			def get_number_of_checks() -> int:
@@ -255,7 +308,7 @@ class Simulation:
 				checkpos += checkdir
 			
 				for c in Simulation.creatures:
-					if not c.position == checkpos: continue
+					if c.position != checkpos: continue
 					if free_space: return False
 					if (c.brain is None) == alive: continue
 					
@@ -269,6 +322,11 @@ class Simulation:
 						match strength:
 							case b's': return c.strength > creature.strength
 							case b'w': return c.strength <= creature.strength
+					
+					if not diff_sex is None:
+						match diff_sex:
+							case True: return c.sex != creature.sex
+							case False: return c.sex == creature.sex
 					
 					return True
 			
@@ -343,6 +401,16 @@ class Simulation:
 			case Sensor.FoodDownR: return check_sorroundings(Direction.Down, alive = False, recursive = True)
 			case Sensor.FoodRightR: return check_sorroundings(Direction.Right, alive = False, recursive = True)
 	
+			case Sensor.CreUpSmSex: return check_sorroundings(Direction.Up, diff_sex = False)
+			case Sensor.CreLeftSmSex: return check_sorroundings(Direction.Left, diff_sex = False)
+			case Sensor.CreDownSmSex: return check_sorroundings(Direction.Down, diff_sex = False)
+			case Sensor.CreRightSmSex: return check_sorroundings(Direction.Right, diff_sex = False)
+			
+			case Sensor.CreUpDiffSex: return check_sorroundings(Direction.Up, diff_sex = True)
+			case Sensor.CreLeftDiffSex: return check_sorroundings(Direction.Left, diff_sex = True)
+			case Sensor.CreDownDiffSex: return check_sorroundings(Direction.Down, diff_sex = True)
+			case Sensor.CreRightDiffSex: return check_sorroundings(Direction.Right, diff_sex = True)
+	
 	def request(creature: Creature, behaviour: Behaviour) -> bool:
 		def move(dir: Direction) -> bool:
 			checkpos = creature.position + Direction.to_Vector2i(dir)
@@ -383,6 +451,35 @@ class Simulation:
 						return True
 			
 			return False
+		
+		def mate(dir: Direction) -> bool:
+			checkpos = creature.position + Direction.to_Vector2i(dir)
+			
+			for c in Simulation.creatures:
+				if not c.position == checkpos or c.brain is None or c.sex == creature.sex:
+					continue
+				
+				def dir_free(dd: Direction) -> bool:
+					cp = creature.position + Direction.to_Vector2i(dd)
+					
+					for c2 in Simulation.creatures:
+						if c.position == cp:
+							return False
+					
+					return True
+				
+				for d in Direction:
+					if not dir_free(d): continue
+					
+					Simulation.creatures.append(Creature.from_parents(
+						creature,
+						c,
+						creature.position + Direction.to_Vector2i(d)
+					))
+						
+					return True
+			
+			return False
 	
 		match behaviour:
 			case Behaviour.MvUp: return move(Direction.Up)
@@ -399,4 +496,9 @@ class Simulation:
 			case Behaviour.KillLeft: return kill(Direction.Left)
 			case Behaviour.KillDown: return kill(Direction.Down)
 			case Behaviour.KillRight: return kill(Direction.Right)
+			
+			case Behaviour.MateUp: return mate(Direction.Up)
+			case Behaviour.MateLeft: return mate(Direction.Left)
+			case Behaviour.MateDown: return mate(Direction.Down)
+			case Behaviour.MateRight: return mate(Direction.Right)
 
