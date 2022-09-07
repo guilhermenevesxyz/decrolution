@@ -67,7 +67,6 @@ class Direction(enum.Enum):
 			case Direction.Left: return Vector2i(-1, 0)
 			case Direction.Down: return Vector2i(0, 1)
 			case Direction.Right: return Vector2i(1, 0)
-		
 
 class Sensor(enum.Enum):
 	CreUp = 0
@@ -345,50 +344,59 @@ class Simulation:
 			case Sensor.FoodRightR: return check_sorroundings(Direction.Right, alive = False, recursive = True)
 	
 	def request(creature: Creature, behaviour: Behaviour) -> bool:
-		def move(dir: Direction):
+		def move(dir: Direction) -> bool:
 			checkpos = creature.position + Direction.to_Vector2i(dir)
 			
 			for c in checkpos.coordinates():
 				if c < 0 or c > Simulation.size:
-					return
+					return False
 			
 			for c in Simulation.creatures:
 				if c.position == checkpos:
-					return
+					return False
 			
 			creature.position = checkpos
+			
+			return True
 		
-		def eat(dir: Direction):
+		def eat(dir: Direction) -> bool:
 			checkpos = creature.position + Direction.to_Vector2i(dir)
 			
 			for c in Simulation.creatures:
 				if c.position == checkpos and c.brain is None:
 					Simulation.creatures.remove(c)
 					creature.energy += 200
+					return True
+			
+			return False
 		
-		def kill(dir: Direction):
+		def kill(dir: Direction) -> bool:
 			checkpos = creature.position + Direction.to_Vector2i(dir)
 			
 			for c in Simulation.creatures:
 				if c.position == checkpos and not c.brain is None:
 					if c.strength > creature.strength:
 						creature.die()
+						return True
 					else:
 						c.die()
+						return True
+			
+			return False
 	
 		match behaviour:
-			case Behaviour.MvUp: move(Direction.Up)
-			case Behaviour.MvLeft: move(Direction.Left)
-			case Behaviour.MvDown: move(Direction.Down)
-			case Behaviour.MvRight: move(Direction.Right)
+			case Behaviour.MvUp: return move(Direction.Up)
+			case Behaviour.MvLeft: return move(Direction.Left)
+			case Behaviour.MvDown: return move(Direction.Down)
+			case Behaviour.MvRight: return move(Direction.Right)
 			
-			case Behaviour.EatUp: eat(Direction.Up)
-			case Behaviour.EatLeft: eat(Direction.Left)
-			case Behaviour.EatDown: eat(Direction.Down)
-			case Behaviour.EatRight: eat(Direction.Right)
+			case Behaviour.EatUp: return eat(Direction.Up)
+			case Behaviour.EatLeft: return eat(Direction.Left)
+			case Behaviour.EatDown: return eat(Direction.Down)
+			case Behaviour.EatRight: return eat(Direction.Right)
 			
-			case Behaviour.KillUp: kill(Direction.Up)
-			case Behaviour.KillLeft: kill(Direction.Left)
-			case Behaviour.KillDown: kill(Direction.Down)
-			case Behaviour.KillRight: kill(Direction.Right)
+			case Behaviour.KillUp: return kill(Direction.Up)
+			case Behaviour.KillLeft: return kill(Direction.Left)
+			case Behaviour.KillDown: return kill(Direction.Down)
+			case Behaviour.KillRight: return kill(Direction.Right)
 
