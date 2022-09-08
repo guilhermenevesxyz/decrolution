@@ -574,13 +574,16 @@ def update():
 		
 		if GRID[x, y].age == GRID[x, y].max_age:
 			_turn_to_food(Vector2(x, y))
+			continue
 		
-		for sensor, behaviour in GRID[x, y].brain.data.items():
+		for _ in GRID[x, y].brain.data.keys():
 			GRID[x, y].energy -= 1
 			
-			if GRID[x, y].energy == 0:
-				_turn_to_food(Vector2(x, y))
-			
+		if GRID[x, y].energy <= 0:
+			_turn_to_food(Vector2(x, y))
+			continue
+		
+		for sensor, behaviour in GRID[x, y].brain.data.items():
 			if _query(Vector2(x, y), sensor):
 				if _request(Vector2(x, y), behaviour):
 					break
