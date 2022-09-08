@@ -23,7 +23,7 @@ while True:
 		if e.type == locals.QUIT:
 			exit()
 	
-	if counter == 1500:
+	if counter == 1:
 		counter = 0
 		update()
 	

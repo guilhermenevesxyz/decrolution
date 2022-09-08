@@ -1,7 +1,9 @@
 from enum         import IntEnum
 from numpy        import empty, array, ndarray, ndindex, min, max, round
-from numpy.random import randint
+from numpy.random import randint, seed
 from dataclasses  import dataclass
+
+seed()
 
 class Vector2:
 	def __init__(self, x = 0, y = 0):
@@ -183,6 +185,8 @@ class Sensor(IntEnum):
 	CreRightDiffSex = 59
 	
 	Alive = 60
+	
+	Size = 61
 
 class Behaviour(IntEnum):
 	MvUp    = 0
@@ -206,27 +210,16 @@ class Behaviour(IntEnum):
 	MateRight = 15
 	
 	MvRnd = 16
+	
+	Size = 17
 
-@dataclass
 class Brain:
-	data = {
-		Sensor.FoodUp: Behaviour.EatUp,
-		Sensor.FoodLeft: Behaviour.EatLeft,
-		Sensor.FoodDown: Behaviour.EatDown,
-		Sensor.FoodRight: Behaviour.EatRight,
+	def __init__(self):
+		self.data: dict[Sensor, Behaviour] = {}
+		brainsize = randint(1, Sensor.Size)
 		
-		Sensor.CreUpDiffSex: Behaviour.MateUp,
-		Sensor.CreLeftDiffSex: Behaviour.MateLeft,
-		Sensor.CreDownDiffSex: Behaviour.MateDown,
-		Sensor.CreRightDiffSex: Behaviour.MateRight,
-		
-		Sensor.CreUpSmSex: Behaviour.KillUp,
-		Sensor.CreLeftSmSex: Behaviour.KillLeft,
-		Sensor.CreDownSmSex: Behaviour.KillDown,
-		Sensor.CreRightSmSex: Behaviour.KillRight,
-		
-		Sensor.Alive: Behaviour.MvRnd,
-	}
+		for i in range(brainsize):
+			self.data[Sensor(i)] = Behaviour(randint(0, Behaviour.Size))
 
 @dataclass
 class Creature:
@@ -244,7 +237,7 @@ GRID = empty(SIZE.as_tuple(), dtype=object)
 
 def initialize():
 	for x, y in ndindex(GRID.shape):
-		if not randint(0, 101) <= 10:
+		if not randint(0, 101) <= 30:
 			continue
 		
 		GRID[x, y] = Creature(
@@ -409,9 +402,8 @@ def _query(pos: Vector2, sensor: Sensor) -> bool:
 def _move(pos: Vector2, dir: Direction) -> bool:
 	checkpos = pos + Direction.as_Vector2(dir)
 	
-	for n, c in enumerate(checkpos.coordinates()):
-		if c < 0 or c >= SIZE.coordinates()[n]:
-			return False
+	if not checkpos.in_bounds(Vector2(), SIZE):
+		return False
 	
 	if not GRID[checkpos.x, checkpos.y] is None:
 		return False
@@ -423,6 +415,9 @@ def _move(pos: Vector2, dir: Direction) -> bool:
 
 def _eat(pos: Vector2, dir: Direction) -> bool:
 	checkpos = pos + Direction.as_Vector2(dir)
+	
+	if not checkpos.in_bounds(Vector2(), SIZE):
+		return False
 	
 	if GRID[checkpos.x, checkpos.y] is None:
 		return False
@@ -445,6 +440,9 @@ def _turn_to_food(pos: Vector2):
 def _kill(pos: Vector2, dir: Direction) -> bool:
 	checkpos = pos + Direction.as_Vector2(dir)
 	
+	if not checkpos.in_bounds(Vector2(), SIZE):
+		return False
+	
 	if GRID[checkpos.x, checkpos.y] is None:
 		return False
 	
@@ -464,6 +462,9 @@ def _mate(pos: Vector2, dir: Direction) -> bool:
 		return False
 	
 	checkpos = pos + Direction.as_Vector2(dir)
+	
+	if not checkpos.in_bounds(Vector2(), SIZE):
+		return False
 	
 	# Incel.
 	if GRID[checkpos.x, checkpos.y] is None:
