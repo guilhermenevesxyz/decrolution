@@ -259,16 +259,9 @@ class Creature:
 	brain:  Brain = Brain()
 	energy: int   = 300
 	age:    int   = 0
-
-SIZE = Vector2(20, 20)
-GRID = empty(SIZE.as_tuple(), dtype=object)
-
-def initialize():
-	for x, y in ndindex(GRID.shape):
-		if not randint(0, 101) <= 30:
-			continue
-		
-		GRID[x, y] = Creature(
+	
+	def generate_random():
+		return Creature(
 			Colour(
 				randint(0x50, 0x100),
 				randint(0x50, 0x100),
@@ -278,6 +271,16 @@ def initialize():
 			Sex(randint(0, 2)),
 			randint(90, 250)
 		)
+
+SIZE = Vector2(20, 20)
+GRID = empty(SIZE.as_tuple(), dtype=object)
+
+def initialize():
+	for x, y in ndindex(GRID.shape):
+		if not randint(0, 101) <= 30:
+			continue
+		
+		GRID[x, y] = Creature.generate_random()
 
 def _check_sorroundings(pos: Vector2,            # The position whose sorroundings are to check.
 		        dir: Direction,          # Where to check.
@@ -513,6 +516,10 @@ def _mate(pos: Vector2, dir: Direction) -> bool:
 			continue
 		
 		if GRID[dirvec.x, dirvec.y] is None:
+			if randint(0, 101) <= 10:
+				GRID[dirvec.x, dirvec.y] = Creature.generate_random()
+				return True
+			
 			GRID[dirvec.x, dirvec.y] = Creature(
 				Colour(
 					randint(
