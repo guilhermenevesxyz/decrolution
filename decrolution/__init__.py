@@ -3,8 +3,6 @@ from numpy        import empty, array, ndarray, ndindex, min, max, round
 from numpy.random import randint, seed
 from dataclasses  import dataclass
 
-seed()
-
 class Vector2:
 	def __init__(self, x = 0, y = 0):
 		self.x = x
@@ -275,7 +273,9 @@ class Creature:
 SIZE = Vector2(20, 20)
 GRID = empty(SIZE.as_tuple(), dtype=object)
 
-def initialize():
+def initialize(seedn = None):
+	seed(seedn)
+	
 	for x, y in ndindex(GRID.shape):
 		if not randint(0, 101) <= 30:
 			continue
