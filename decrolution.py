@@ -214,12 +214,40 @@ class Behaviour(IntEnum):
 	Size = 17
 
 class Brain:
-	def __init__(self):
+	def __init__(self, empty = False):
 		self.data: dict[Sensor, Behaviour] = {}
+		
+		if empty:
+			return
+		
 		brainsize = randint(1, Sensor.Size)
 		
 		for i in range(brainsize):
-			self.data[Sensor(i)] = Behaviour(randint(0, Behaviour.Size))
+			self.data[Sensor(randint(0, Sensor.Size))] = Behaviour(randint(0, Behaviour.Size))
+	
+	def from_parents(p1, p2):
+		new = Brain(empty = True)
+		
+		brainsize = randint(
+			min([len(p1.data.keys()), len(p2.data.keys())]),
+			max([len(p1.data.keys()), len(p2.data.keys())]) + 1
+		)
+		
+		for i in range(brainsize):
+			parent = randint(1, 3)
+			
+			if len(p1.data.keys()) <= i:
+				parent = 2
+			
+			if len(p2.data.keys()) <= i:
+				parent = 1
+			
+			if parent == 1:
+				new.data[list(p1.data.keys())[i]] = Behaviour(list(p1.data.values())[i])
+			else:
+				new.data[list(p2.data.keys())[i]] = Behaviour(list(p2.data.values())[i])
+		
+		return new
 
 @dataclass
 class Creature:
@@ -532,6 +560,10 @@ def _mate(pos: Vector2, dir: Direction) -> bool:
 				randint(
 					min([GRID[pos.x, pos.y].max_age, GRID[checkpos.x, checkpos.y].max_age]),
 					max([GRID[pos.x, pos.y].max_age, GRID[checkpos.x, checkpos.y].max_age]) + 1
+				),
+				brain = Brain.from_parents(
+					GRID[pos.x, pos.y].brain,
+					GRID[checkpos.x, checkpos.y].brain
 				)
 			)
 			
