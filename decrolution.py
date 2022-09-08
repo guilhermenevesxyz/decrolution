@@ -91,12 +91,16 @@ class Direction(IntEnum):
 	Down  = 2
 	Right = 3
 	
+	Size = 4
+	
 	def as_Vector2(self) -> Vector2:
 		match self:
 			case Direction.Up:    return Vector2(0, -1)
 			case Direction.Left:  return Vector2(-1, 0)
 			case Direction.Down:  return Vector2(0, 1)
 			case Direction.Right: return Vector2(1, 0)
+			
+			case _: return Vector2()
 
 class Sex(IntEnum):
 	Male   = 0
@@ -177,6 +181,8 @@ class Sensor(IntEnum):
 	CreLeftDiffSex  = 57
 	CreDownDiffSex  = 58
 	CreRightDiffSex = 59
+	
+	Alive = 60
 
 class Behaviour(IntEnum):
 	MvUp    = 0
@@ -198,19 +204,13 @@ class Behaviour(IntEnum):
 	MateLeft  = 13
 	MateDown  = 14
 	MateRight = 15
+	
+	MvRnd = 16
 
 @dataclass
 class Brain:
 	data = {
-		Sensor.CreUpR: Behaviour.MvUp,
-		Sensor.CreLeftR: Behaviour.MvLeft,
-		Sensor.CreDownR: Behaviour.MvDown,
-		Sensor.CreRightR: Behaviour.MvRight,
-		
-		Sensor.FoodUpR: Behaviour.MvUp,
-		Sensor.FoodLeftR: Behaviour.MvLeft,
-		Sensor.FoodDownR: Behaviour.MvDown,
-		Sensor.FoodRightR: Behaviour.MvRight,
+		Sensor.Alive: Behaviour.MvRnd,
 		
 		Sensor.FoodUp: Behaviour.EatUp,
 		Sensor.FoodLeft: Behaviour.EatLeft,
@@ -398,13 +398,15 @@ def _query(pos: Vector2, sensor: Sensor) -> bool:
 		case Sensor.CreDownDiffSex:  return _check_sorroundings(pos, Direction.Down, diff_sex = True)
 		case Sensor.CreRightDiffSex: return _check_sorroundings(pos, Direction.Right, diff_sex = True)
 		
+		case Sensor.Alive: return True
+		
 		case _: return False
 
 def _move(pos: Vector2, dir: Direction) -> bool:
 	checkpos = pos + Direction.as_Vector2(dir)
 	
-	for c, in ndindex(checkpos.coordinates().shape):
-		if c < 0 or c > SIZE.coordinates()[c]:
+	for n, c in enumerate(checkpos.coordinates()):
+		if c < 0 or c >= SIZE.coordinates()[n]:
 			return False
 	
 	if not GRID[checkpos.x, checkpos.y] is None:
@@ -545,6 +547,8 @@ def _request(pos: Vector2, behaviour: Behaviour) -> bool:
 		case Behaviour.MateLeft:  return _mate(pos, Direction.Left)
 		case Behaviour.MateDown:  return _mate(pos, Direction.Down)
 		case Behaviour.MateRight: return _mate(pos, Direction.Right)
+		
+		case Behaviour.MvRnd: return _move(pos, randint(0, Direction.Size))
 
 def update():
 	for x, y in ndindex(GRID.shape):
