@@ -270,7 +270,7 @@ class Creature:
 			randint(90, 250)
 		)
 
-SIZE = Vector2(20, 20)
+SIZE = Vector2(50, 50)
 GRID = empty(SIZE.as_tuple(), dtype=object)
 
 def initialize(seedn = None):
