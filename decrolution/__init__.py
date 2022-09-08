@@ -1,6 +1,6 @@
 from enum         import IntEnum
 from numpy        import empty, array, ndarray, ndindex, min, max, round
-from numpy.random import randint, seed
+from random       import randrange as randint, seed
 from dataclasses  import dataclass
 
 class Vector2:
@@ -253,8 +253,8 @@ class Creature:
 	strength: int
 	sex:      Sex
 	max_age:  int
+	brain:  Brain
 	
-	brain:  Brain = Brain()
 	energy: int   = 300
 	age:    int   = 0
 	
@@ -267,7 +267,8 @@ class Creature:
 			),
 			randint(0, 501),
 			Sex(randint(0, 2)),
-			randint(90, 250)
+			randint(90, 250),
+			Brain()
 		)
 
 SIZE = Vector2(50, 50)
