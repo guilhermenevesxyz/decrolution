@@ -210,8 +210,6 @@ class Behaviour(IntEnum):
 @dataclass
 class Brain:
 	data = {
-		Sensor.Alive: Behaviour.MvRnd,
-		
 		Sensor.FoodUp: Behaviour.EatUp,
 		Sensor.FoodLeft: Behaviour.EatLeft,
 		Sensor.FoodDown: Behaviour.EatDown,
@@ -226,15 +224,20 @@ class Brain:
 		Sensor.CreLeftSmSex: Behaviour.KillLeft,
 		Sensor.CreDownSmSex: Behaviour.KillDown,
 		Sensor.CreRightSmSex: Behaviour.KillRight,
+		
+		Sensor.Alive: Behaviour.MvRnd,
 	}
 
+@dataclass
 class Creature:
-	def __init__(self, colour: Colour, strength: int, sex: Sex, brain: Brain = Brain()):
-		self.brain    = brain
-		self.colour   = colour
-		self.energy   = 300
-		self.strength = strength
-		self.sex      = sex
+	colour:   Colour
+	strength: int
+	sex:      Sex
+	max_age:  int
+	
+	brain:  Brain = Brain()
+	energy: int   = 300
+	age:    int   = 0
 
 SIZE = Vector2(20, 20)
 GRID = empty(SIZE.as_tuple(), dtype=object)
@@ -251,7 +254,8 @@ def initialize():
 				randint(0x50, 0x100)
 			),
 			randint(0, 501),
-			Sex(randint(0, 2))
+			Sex(randint(0, 2)),
+			randint(90, 250)
 		)
 
 def _check_sorroundings(pos: Vector2,            # The position whose sorroundings are to check.
@@ -455,6 +459,10 @@ def _kill(pos: Vector2, dir: Direction) -> bool:
 		return True
 
 def _mate(pos: Vector2, dir: Direction) -> bool:
+	# Too young.
+	if GRID[pos.x, pos.y].age < 18:
+		return False
+	
 	checkpos = pos + Direction.as_Vector2(dir)
 	
 	# Incel.
@@ -519,7 +527,11 @@ def _mate(pos: Vector2, dir: Direction) -> bool:
 						GRID[checkpos.x, checkpos.y].strength
 					]) + 1
 				),
-				Sex(randint(0, 2))
+				Sex(randint(0, 2)),
+				randint(
+					min([GRID[pos.x, pos.y].max_age, GRID[checkpos.x, checkpos.y].max_age]),
+					max([GRID[pos.x, pos.y].max_age, GRID[checkpos.x, checkpos.y].max_age]) + 1
+				)
 			)
 			
 			return True
@@ -552,18 +564,21 @@ def _request(pos: Vector2, behaviour: Behaviour) -> bool:
 
 def update():
 	for x, y in ndindex(GRID.shape):
-		creature = GRID[x, y]
-		
-		if creature == None:
+		if GRID[x, y] == None:
 			continue
 		
-		if creature.brain == None:
+		if GRID[x, y].brain == None:
 			continue
 		
-		for sensor, behaviour in creature.brain.data.items():
-			creature.energy -= 1
+		GRID[x, y].age += 1
+		
+		if GRID[x, y].age == GRID[x, y].max_age:
+			_turn_to_food(Vector2(x, y))
+		
+		for sensor, behaviour in GRID[x, y].brain.data.items():
+			GRID[x, y].energy -= 1
 			
-			if creature.energy == 0:
+			if GRID[x, y].energy == 0:
 				_turn_to_food(Vector2(x, y))
 			
 			if _query(Vector2(x, y), sensor):
