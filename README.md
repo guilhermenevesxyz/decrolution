@@ -16,7 +16,7 @@ while the front-end is under the public domain ([Unlicense](https://unlicense.or
 The universe consists of **a grid** containing all the **creatures**.
 Each creature has **some data** associated with it.
 Some of these data are **genome data**, meaning that they get **passed to the offspring**.
-The others - **autonomous data** - are some data **specific** to that individual creature,
+The others--**autonomous data**--are some data **specific** to that individual creature,
 and that individual creature only.
 Note that this division is not made clear in the library's code.
 
@@ -40,11 +40,20 @@ A creature's sensors might detect things like the creatures sorrounding it or if
 These data are then passed to the brain,
 which has inherent links between them and some possible behaviours in response.
 These behaviours can be moving, attacking or eating.
+These traits are **inheritable**.
 
 ### General Ideas
 #### Genetic Variety
 The colours in a population are hints of the genetic variety that is present in it.
 Many colours mean much variety and vice versa.
+
+They can be used to distinguish the individuals which have certain mutations in them
+and help knowing how genetically similar some specimens are.
+The colours are also useful to detect mutations,
+since they change in mutated individuals.
+
+Some creatures might also be hostile towards different creatures with other colours,
+thus protecting their family from predation.
 
 #### Death
 Alive creatures usually have bright colours.
