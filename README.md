@@ -56,6 +56,18 @@ The deceased must be eaten by others in order to disappear completely.
 Creatures can start procreation once they hit the age of 18.
 After that point, there are no limits as to what they can do till they pass away.
 
+#### Climate influence on metabolism
+The left side of the arena is colder, whilst the right side is warmer,
+thus creating a temperature gradient.
+Creatures on the left side will have a slower metabolism and thence live longer lives,
+but they will also be less fertile.
+Meanwhile, the creatures on the right, warmer, side of the arena will have faster metabolisms,
+allowing them to reproduce more, but dying faster in comparison.
+
+The left-right division **does not** entail any political references.
+There had to be a division and a north/south one would have looked worse on the screen,
+whilst also not inclusive of those living in the southern hemisphere.
+
 ### Tips
 The simulation should not produce capable survivors on every single run.
 Be patient and try a number of times until you get a good seed.
