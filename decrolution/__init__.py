@@ -1,5 +1,5 @@
 from enum         import IntEnum
-from numpy        import empty, array, ndarray, ndindex, min, max, round
+from numpy        import empty, array, ndarray, ndindex, min, max, round, interp
 from random       import randrange as randint, seed
 from dataclasses  import dataclass
 
@@ -255,7 +255,7 @@ class Creature:
 	max_age:  int
 	brain:  Brain
 	
-	energy: int   = 300
+	energy: float = 400
 	age:    int   = 0
 	
 	def generate_random():
@@ -515,6 +515,10 @@ def _mate(pos: Vector2, dir: Direction) -> bool:
 		
 		if not dirvec.in_bounds(Vector2(), SIZE):
 			continue
+
+		# The closer to the right, the greater the fertility is.
+		if not randint(0, 101) <= interp(pos.x, array([0, SIZE.x]), array([0, 100])):
+			continue
 		
 		if GRID[dirvec.x, dirvec.y] is None:
 			if randint(0, 101) <= 10:
@@ -618,7 +622,15 @@ def update():
 			continue
 		
 		for _ in GRID[x, y].brain.data.keys():
-			GRID[x, y].energy -= 1
+			# Higher x values will use more energy.
+			# 
+			# x-position           waste-level
+			# 0 ------------------ 0.5
+			# SIZE.x ------------- 2
+			# 
+			# linear interpolation
+
+			GRID[x, y].energy -= interp(x, array([0, SIZE.x]), array([0.5, 2]))
 			
 		if GRID[x, y].energy <= 0:
 			_turn_to_food(Vector2(x, y))
